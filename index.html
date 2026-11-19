@@ -133,9 +133,6 @@ video {
       Activar linterna
     </button>
     
-<button id="btnVolver" class="principal" style="display: none;">
-  Volver a la aplicación
-</button>
     <div id="resultado">
       Estado:
       <p id="estado">Esperando para iniciar...</p>
@@ -197,9 +194,7 @@ video {
 
 detenerCamara();
 
-estado.textContent = '¡Producto escaneado correctamente!';
-
-document.getElementById('btnVolver').style.display = 'block';
+estado.textContent = 'Código enviado. Puedes volver a la aplicación.';
   } else {
     estado.textContent = 'Código leído, pero no se encontró la aplicación de origen.';
   }
@@ -275,15 +270,6 @@ document.getElementById('btnVolver').style.display = 'block';
 
     document.getElementById('btnLinterna')
   .addEventListener('click', alternarLinterna);
-
-document.getElementById('btnVolver')
-  .addEventListener('click', function() {
-    if (window.opener && !window.opener.closed) {
-      window.opener.focus();
-    }
-
-    window.close();
-  });
 
 estado.textContent = 'JavaScript cargado correctamente.';
   </script>
