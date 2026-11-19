@@ -185,16 +185,20 @@ video {
 
   if (window.opener && !window.opener.closed) {
     window.opener.postMessage(
-      {
-        tipo: 'CODIGO_BARRAS_DETECTADO',
-        codigo: codigoLeido
-      },
-      '*'
-    );
+  {
+    tipo: 'CODIGO_BARRAS_DETECTADO',
+    codigo: codigoLeido
+  },
+  'https://script.google.com'
+);
 
-    detenerCamara();
+detenerCamara();
 
-    estado.textContent = 'Código enviado. Puedes volver a la aplicación.';
+estado.textContent = 'Código enviado. Volviendo a la aplicación...';
+
+setTimeout(() => {
+  window.close();
+}, 500);
   } else {
     estado.textContent = 'Código leído, pero no se encontró la aplicación de origen.';
   }
