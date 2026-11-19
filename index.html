@@ -171,7 +171,6 @@ video {
             audio: false,
             video: {
   facingMode: 'environment',
-  focusMode: 'continuous'
 }
           },
           video,
@@ -205,9 +204,21 @@ estado.textContent = 'Código enviado. Puedes volver a la aplicación.';
 
         const stream = video.srcObject;
 
-        if (stream) {
-          pistaCamara = stream.getVideoTracks()[0];
-        }
+if (stream) {
+  pistaCamara = stream.getVideoTracks()[0];
+
+  const capacidades = pistaCamara.getCapabilities();
+
+  console.log('Capacidades de cámara:', capacidades);
+
+  estado.textContent = 'Cámara activa. Revisando enfoque...';
+
+  if (capacidades.focusMode) {
+    console.log('Modos de enfoque disponibles:', capacidades.focusMode);
+  } else {
+    console.log('El navegador no informa modos de enfoque.');
+  }
+}
 
         estado.textContent = 'Cámara activa. Buscando códigos...';
 
