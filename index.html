@@ -151,6 +151,8 @@
     let codigoEnviado = false;
 
     async function iniciarCamara() {
+      codigoEnviado = false;
+      
       try {
         estado.textContent = 'Solicitando acceso a la cámara...';
 
