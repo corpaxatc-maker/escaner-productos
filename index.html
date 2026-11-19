@@ -197,15 +197,9 @@ video {
 
 detenerCamara();
 
-estado.textContent = 'Código enviado. Volviendo a la aplicación...';
+estado.textContent = '¡Producto escaneado correctamente!';
 
-setTimeout(() => {
-  if (window.opener && !window.opener.closed) {
-    window.opener.focus();
-  }
-
-  window.close();
-}, 500);
+document.getElementById('btnVolver').style.display = 'block';
   } else {
     estado.textContent = 'Código leído, pero no se encontró la aplicación de origen.';
   }
