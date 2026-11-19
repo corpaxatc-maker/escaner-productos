@@ -132,7 +132,7 @@ video {
     <button id="btnLinterna" class="secundario">
       Activar linterna
     </button>
-    <button id="btnDiagnostico">Diagnosticar cámaras</button>
+    
     <div id="resultado">
       Estado:
       <p id="estado">Esperando para iniciar...</p>
@@ -153,29 +153,7 @@ video {
     let pistaCamara = null;
     let linternaActiva = false;
     let codigoEnviado = false;
-async function diagnosticarCamaras() {
-  try {
-    const camaras = await navigator.mediaDevices.enumerateDevices();
 
-    const camarasVideo = camaras.filter(
-      dispositivo => dispositivo.kind === 'videoinput'
-    );
-
-    console.log('Cámaras disponibles:', camarasVideo);
-
-    const nombres = camarasVideo.map((camara, indice) => {
-      return `${indice + 1}. ${camara.label || 'Cámara sin identificar'}`;
-    });
-
-    estado.textContent = nombres.length
-      ? nombres.join(' | ')
-      : 'No se encontraron cámaras.';
-
-  } catch (error) {
-    console.error(error);
-    estado.textContent = 'No se pudieron identificar las cámaras.';
-  }
-}
     async function iniciarCamara() {
       codigoEnviado = false;
       
@@ -306,8 +284,6 @@ if (stream) {
 
     document.getElementById('btnLinterna')
   .addEventListener('click', alternarLinterna);
-    
-document.getElementById('btnDiagnostico').addEventListener('click', diagnosticarCamaras);
 
 estado.textContent = 'JavaScript cargado correctamente.';
   </script>
