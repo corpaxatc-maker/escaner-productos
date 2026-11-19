@@ -1,12 +1,250 @@
+
 <!DOCTYPE html>
 <html lang="es">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#111827">
   <title>Escáner de productos</title>
+
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      padding: 20px;
+      background: #111827;
+      color: white;
+      font-family: Arial, sans-serif;
+      text-align: center;
+    }
+
+    h1 {
+      font-size: 24px;
+      margin-bottom: 8px;
+    }
+
+    p {
+      color: #cbd5e1;
+    }
+
+    .contenedor {
+      max-width: 500px;
+      margin: auto;
+    }
+
+    .camara {
+      position: relative;
+      width: 100%;
+      overflow: hidden;
+      border-radius: 14px;
+      background: black;
+      margin-top: 20px;
+    }
+
+    video {
+      display: block;
+      width: 100%;
+      min-height: 240px;
+      object-fit: cover;
+    }
+
+    .marco {
+      position: absolute;
+      top: 50%;
+      left: 10%;
+      width: 80%;
+      height: 90px;
+      transform: translateY(-50%);
+      border: 2px solid #22c55e;
+      border-radius: 8px;
+      pointer-events: none;
+    }
+
+    button {
+      width: 100%;
+      padding: 15px;
+      margin-top: 12px;
+      border: 0;
+      border-radius: 9px;
+      font-size: 16px;
+      font-weight: bold;
+      cursor: pointer;
+    }
+
+    .principal {
+      background: #22c55e;
+      color: #052e16;
+    }
+
+    .secundario {
+      background: #374151;
+      color: white;
+    }
+
+    #resultado {
+      margin-top: 20px;
+      padding: 16px;
+      background: #1f2937;
+      border-radius: 10px;
+      overflow-wrap: anywhere;
+    }
+
+    #codigo {
+      font-size: 25px;
+      font-weight: bold;
+      color: #4ade80;
+      display: block;
+      margin-top: 8px;
+    }
+
+    #estado {
+      min-height: 24px;
+      font-size: 14px;
+    }
+  </style>
 </head>
+
 <body>
-  <h1>Escáner de productos</h1>
-  <p>Próximamente activaremos la cámara.</p>
+  <main class="contenedor">
+    <h1>Escáner de productos</h1>
+    <p>Centra el código de barras dentro del recuadro.</p>
+
+    <div class="camara">
+      <video id="video" autoplay muted playsinline></video>
+      <div class="marco"></div>
+    </div>
+
+    <button id="btnIniciar" class="principal">
+      Activar cámara
+    </button>
+
+    <button id="btnDetener" class="secundario">
+      Detener cámara
+    </button>
+
+    <button id="btnLinterna" class="secundario">
+      Activar linterna
+    </button>
+
+    <div id="resultado">
+      Estado:
+      <p id="estado">Esperando para iniciar...</p>
+      Código detectado:
+      <span id="codigo">---</span>
+    </div>
+  </main>
+
+  <script src="https://unpkg.com/@zxing/browser@0.1.5/umd/index.min.js"></script>
+
+  <script>
+    const video = document.getElementById('video');
+    const estado = document.getElementById('estado');
+    const codigo = document.getElementById('codigo');
+
+    let lector = null;
+    let controles = null;
+    let pistaCamara = null;
+    let linternaActiva = false;
+
+    async function iniciarCamara() {
+      try {
+        estado.textContent = 'Solicitando acceso a la cámara...';
+
+        if (!window.ZXingBrowser) {
+          throw new Error('No se pudo cargar el lector de códigos.');
+        }
+
+        lector = new ZXingBrowser.BrowserMultiFormatReader();
+
+        controles = await lector.decodeFromConstraints(
+          {
+            audio: false,
+            video: {
+              facingMode: { ideal: 'environment' },
+              width: { ideal: 1920 },
+              height: { ideal: 1080 }
+            }
+          },
+          video,
+          (resultado, error) => {
+            if (resultado) {
+              codigo.textContent = resultado.getText();
+              estado.textContent = '¡Código detectado!';
+            }
+          }
+        );
+
+        const stream = video.srcObject;
+
+        if (stream) {
+          pistaCamara = stream.getVideoTracks()[0];
+        }
+
+        estado.textContent = 'Cámara activa. Buscando códigos...';
+
+      } catch (error) {
+        console.error(error);
+        estado.textContent = 'No se pudo iniciar la cámara: ' + error.message;
+      }
+    }
+
+    function detenerCamara() {
+      if (controles) {
+        controles.stop();
+        controles = null;
+      }
+
+      if (video.srcObject) {
+        video.srcObject.getTracks().forEach(pista => pista.stop());
+        video.srcObject = null;
+      }
+
+      pistaCamara = null;
+      linternaActiva = false;
+      estado.textContent = 'Cámara detenida.';
+    }
+
+    async function alternarLinterna() {
+      if (!pistaCamara) {
+        estado.textContent = 'Primero debes activar la cámara.';
+        return;
+      }
+
+      try {
+        const capacidades = pistaCamara.getCapabilities();
+
+        if (!capacidades.torch) {
+          estado.textContent = 'Este dispositivo no permite controlar la linterna.';
+          return;
+        }
+
+        linternaActiva = !linternaActiva;
+
+        await pistaCamara.applyConstraints({
+          advanced: [{ torch: linternaActiva }]
+        });
+
+        estado.textContent = linternaActiva
+          ? 'Linterna activada.'
+          : 'Linterna desactivada.';
+
+      } catch (error) {
+        console.error(error);
+        estado.textContent = 'No se pudo controlar la linterna.';
+      }
+    }
+
+    document.getElementById('btnIniciar')
+      .addEventListener('click', iniciarCamara);
+
+    document.getElementById('btnDetener')
+      .addEventListener('click', detenerCamara);
+
+    document.getElementById('btnLinterna')
+      .addEventListener('click', alternarLinterna);
+  </script>
 </body>
 </html>
