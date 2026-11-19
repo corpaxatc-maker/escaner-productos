@@ -148,6 +148,7 @@
     let controles = null;
     let pistaCamara = null;
     let linternaActiva = false;
+    let codigoEnviado = false;
 
     async function iniciarCamara() {
       try {
@@ -170,9 +171,30 @@
           },
           video,
           (resultado, error) => {
-            if (resultado) {
-              codigo.textContent = resultado.getText();
-              estado.textContent = '¡Código detectado!';
+            if (resultado && !codigoEnviado) {
+  codigoEnviado = true;
+
+  const codigoLeido = resultado.getText();
+
+  codigo.textContent = codigoLeido;
+  estado.textContent = '¡Código detectado! Enviando a la aplicación...';
+
+  if (window.opener && !window.opener.closed) {
+    window.opener.postMessage(
+      {
+        tipo: 'CODIGO_BARRAS_DETECTADO',
+        codigo: codigoLeido
+      },
+      '*'
+    );
+
+    detenerCamara();
+
+    estado.textContent = 'Código enviado. Puedes volver a la aplicación.';
+  } else {
+    estado.textContent = 'Código leído, pero no se encontró la aplicación de origen.';
+  }
+}
             }
           }
         );
