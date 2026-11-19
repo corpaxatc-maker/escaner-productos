@@ -274,8 +274,18 @@ document.getElementById('btnVolver').style.display = 'block';
       .addEventListener('click', detenerCamara);
 
     document.getElementById('btnLinterna')
-      .addEventListener('click', alternarLinterna);
-    estado.textContent = 'JavaScript cargado correctamente.';
+  .addEventListener('click', alternarLinterna);
+
+document.getElementById('btnVolver')
+  .addEventListener('click', function() {
+    if (window.opener && !window.opener.closed) {
+      window.opener.focus();
+    }
+
+    window.close();
+  });
+
+estado.textContent = 'JavaScript cargado correctamente.';
   </script>
 </body>
 </html>
